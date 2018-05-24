@@ -1,5 +1,6 @@
 package com.sololearnmessage.sololearn.solomessage;
 
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
@@ -14,16 +15,30 @@ import android.widget.Toast;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
     private static final String TAG = "MessageAdapter";
 
-    private ArrayList<Message> messages = new ArrayList<>();
+    public ArrayList<Message> messages = new ArrayList<>();
     private Context context;
 
-    public MessageAdapter(Context context, ArrayList<Message> messages) {
-        this.messages = messages;
+    public MessageAdapter(Context context) {
         this.context = context;
+    }
+
+    public void AddMessage(Message message){
+        messages.add(message);
+        notifyItemInserted(messages.size()-1);
+    }
+
+    public void RemoveMessages(){
+        messages.clear();
+        notifyDataSetChanged();
+    }
+
+    public void ScrollToPosition(RecyclerView recyclerView){
+        recyclerView.scrollToPosition(messages.size()-1);
     }
 
     @NonNull
@@ -39,12 +54,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         holder.userName.setText(messages.get(position).GetUserName());
         holder.userMessage.setText(messages.get(position).GetUserMessage());
 
-        holder.parentLayout.setOnClickListener(new View.OnClickListener(){
+        holder.parentLayout.setOnLongClickListener(new View.OnLongClickListener(){
             @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Clicked on the user name: " + messages.get(position).GetUserName());
-
-                Toast.makeText(context, messages.get(position).GetUserName(false), Toast.LENGTH_SHORT).show();
+            public boolean onLongClick(View v) {
+                // Copy content message
+                Toast.makeText(context, "Text copied", Toast.LENGTH_SHORT).show();
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text",  messages.get(position).GetUserMessage());
+                clipboard.setPrimaryClip(clip);
+                return true;
             }
         });
     }
